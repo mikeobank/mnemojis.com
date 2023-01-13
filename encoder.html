@@ -16,9 +16,6 @@
   div {
     margin-bottom: 24px;
   }
-  select {
-    width: 12em;
-  }
   input[type="number"] {
     width: 2.5em;
   }
@@ -34,6 +31,19 @@
     display: inline-block;
     margin-top: 10px;
   }
+  .input-wrap {
+    display: flex;
+  }
+  .input-wrap .left {
+    flex: 1;
+    margin-right: 12px;
+  }
+  .input-wrap .right {
+    width: 20%;
+  }
+  .input-wrap .right select {
+    width: 100%;
+  }
 
 </style>
 </head>
@@ -42,12 +52,13 @@
 
 <div id="wrapper">
 <form>
-<div>
-  <label for="in">Input (Hex / Bech32 / Base58 / UTF-8)</label>
+<div class="input-wrap">
+<div class="left">
+  <label for="in">Input</label>
   <input id="in" name="in" type="text" />
 </div>
-<div>
-  <label for="encoding">Encoding for Decode (autoselected for Encode)</label>
+<div class="right">
+  <label for="encoding">Encoding</label>
   <select id="encoding" name="encoding">
     <option value="">-</option>
     <option value="Hex">Hex</option>
@@ -55,6 +66,7 @@
     <option value="Base58">Base58</option>
     <option value="UTF-8">UTF-8</option>
   </select>
+</div>
 </div>
 <div>
   <label for="out">Mnemojis</label>
@@ -123,6 +135,10 @@ const setQrCodeAnchorHref = s => {
   qrCodeAnchor.setAttribute("style", `visibility: ${ visibility };`)
 }
 
+const setSelectEncoding = encoding => {
+  selectEncoding.value = encoding ?? ""
+}
+
 const generate = () => {
   const n = parseInt(inputNumGenerate.value, 10)
   if (Number.isNaN(n)) return
@@ -165,11 +181,10 @@ const encode = () => {
 
 const decode = () => {
   const s = inputOut.value.trim()
-  const encoding = selectEncoding.value
+  const encoding = selectEncoding.value === "" ? "Hex" : selectEncoding.value
   let strDecoded
   switch (encoding) {
     case "Hex":
-    case "":
       strDecoded = toHexString(mnemojisToBytes(s))
       break
     case "Bech32":
@@ -185,6 +200,7 @@ const decode = () => {
       break
   }
   inputIn.value = strDecoded
+  setSelectEncoding(encoding)
 }
 
 form.addEventListener("submit", event => {
@@ -202,8 +218,12 @@ form.addEventListener("submit", event => {
   }
 })
 
+inputIn.addEventListener("change", () => {
+  const encoding = getEncoding(inputIn.value)
+  setSelectEncoding(encoding)
+})
+
 inputOut.addEventListener("change", () => {
-  console.log("change")
   setQrCodeAnchorHref(inputOut.value)
 })
 

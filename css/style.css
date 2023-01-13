@@ -20,8 +20,11 @@ label {
   display: block;
   margin-bottom: 4px;
 }
-input, select {
+input {
   font-size: 32px;
+}
+select {
+  font-size: 35px;
 }
 input[type="checkbox"] {
   width: 37px;
