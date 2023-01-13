@@ -14,3 +14,24 @@ input[type="text"] {
   font-family: Arial, "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
   font-variant-emoji: emoji;
 }
+
+label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 4px;
+}
+input, select {
+  font-size: 32px;
+}
+input[type="checkbox"] {
+  width: 37px;
+  height: 37px;
+  margin-left: 0px;
+}
+input[type="text"] {
+  box-sizing: border-box;
+  width: 100%;
+}
+input[type="number"] {
+  width: 2.5em;
+}

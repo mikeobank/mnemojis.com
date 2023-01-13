@@ -13,13 +13,6 @@
     font-size: 32px;
     font-weight: bold;
   }
-  input, select {
-    font-size: 32px;
-  }
-  input[type="text"] {
-    box-sizing: border-box;
-    width: 100%;
-  }
   div {
     margin-bottom: 24px;
   }
@@ -29,12 +22,25 @@
   input[type="number"] {
     width: 2.5em;
   }
+  menu {
+    display: flex;
+    justify-content: right;
+    padding-top: 24px;
+  }
+  menu input {
+    margin-left: 8px;
+  }
+  a#qr-code {
+    display: inline-block;
+    margin-top: 10px;
+  }
 
 </style>
 </head>
 
 <body>
 
+<div id="wrapper">
 <form>
 <div>
   <label for="in">Input (Hex / Bech32 / Base58 / UTF-8)</label>
@@ -53,16 +59,17 @@
 <div>
   <label for="out">Mnemojis</label>
   <input id="out" name="out" type="text" />
+  <a href="/qr-code.html?s=" id="qr-code" style="visibility: hidden;">QR-code</a>
 </div>
-<div>
+<menu>
   <input type="number" min="1" id="num-generate" value="16" />
   <input id="generate" type="submit" value="Generate">
   <input id="decode" type="submit" value="Decode">
   <input id="encode" type="submit" value="Encode">
-</div>
+</menu>
 </form>
+</div>
 
-<a href="/qr-code.html?s=" id="qr-code" style="display: none;">QR-code</a>
 
 <script type="text/javascript" src="js/mnemojis.json.js"></script>
 <script type="text/javascript" src="js/lib.js"></script>
@@ -112,7 +119,8 @@ const qrCodeAnchor = document.querySelector("a#qr-code")
 const qrCodeAnchorHrefBase = qrCodeAnchor.getAttribute("href")
 const setQrCodeAnchorHref = s => {
   qrCodeAnchor.setAttribute("href", qrCodeAnchorHrefBase + s)
-  qrCodeAnchor.setAttribute("style", "display: initial;")
+  const visibility = s !== "" ? "visible" : "hidden"
+  qrCodeAnchor.setAttribute("style", `visibility: ${ visibility };`)
 }
 
 const generate = () => {
@@ -192,6 +200,11 @@ form.addEventListener("submit", event => {
       encode()
       break
   }
+})
+
+inputOut.addEventListener("change", () => {
+  console.log("change")
+  setQrCodeAnchorHref(inputOut.value)
 })
 
 </script>
