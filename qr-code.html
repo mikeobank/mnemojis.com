@@ -36,7 +36,7 @@
     background: lightgray;
   }
 
-  menu > div {
+  form > div {
     margin: 12px 0;
   }
 
@@ -56,19 +56,20 @@
 <div id="qr-code"></div>
 
 <menu>
-  <div>
-    <label>n</label>
-    <input type="number" min="1" name="n" />
-  </div>
-  <div>
-    <label>mnemojis</label>
-    <input type="text" name="s" />
-  </div>
-  <div>
-    <label>show markers</label>
-    <input type="checkbox" name="show-markers" value="checked"/>
-  </div>
-  <button id="render">Render</button>
+  <form>
+    <div>
+      <label>mnemojis</label>
+      <input type="text" name="s" />
+    </div>
+    <div>
+      <label>m <small>x</small> m</label>
+      <input type="number" min="1" name="n" />
+    </div>
+    <div>
+      <label>show markers</label>
+      <input type="checkbox" name="show-markers" value="checked"/>
+    </div>
+  </form>
 </menu>
 
 <script type="text/javascript" src="js/mnemojis.json.js"></script>
@@ -92,7 +93,7 @@ const defaultN = 10
 const numElementsMarkers = 3 * 3 + 2 * 2
 
 // state
-let showMarkers = true
+let showMarkers = false
 const setShowMarkers = b => {
   showMarkers = b
 }
@@ -163,6 +164,7 @@ const render = () => {
 render()
 
 // menu
+
 const nInput = document.querySelector("input[name='n']")
 nInput.value = calculateN()
 
@@ -170,13 +172,20 @@ const sInput = document.querySelector("input[name='s']")
 sInput.value = (mnemojisDisplay ?? []).join("")
 
 const showMarkersCheckbox = document.querySelector("input[name='show-markers']")
-showMarkersCheckbox.checked = true
+showMarkersCheckbox.checked = showMarkers
 
-const renderButton = document.querySelector("button[id='render']")
-renderButton.addEventListener("click", () => {
-  setMnemojisDisplay(sInput.value.trim())
+nInput.addEventListener("change", () => {
   const nValue = nInput.value.trim()
   setN(nValue !== "" ? nValue : undefined)
+  render()
+})
+
+sInput.addEventListener("change", () => {
+  setMnemojisDisplay(sInput.value.trim())
+  render()
+})
+
+showMarkersCheckbox.addEventListener("change", () => {
   setShowMarkers(showMarkersCheckbox.checked)
   render()
 })
