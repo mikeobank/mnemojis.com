@@ -1,0 +1,206 @@
+<!doctype html>
+<html>
+
+<head>
+
+<meta charset="utf-8">
+<title>Mnemojis encoder</title>
+<style>
+  body {
+    font-family: Arial;
+  }
+  label {
+    display: block;
+    padding-bottom: 8px;
+    font-size: 32px;
+    font-weight: bold;
+  }
+  input, select {
+    font-size: 32px;
+  }
+  input[type="text"] {
+    font-family: Arial, "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+    font-variant-emoji: emoji;
+    box-sizing: border-box;
+    width: 100%;
+  }
+  div {
+    margin-bottom: 24px;
+  }
+  select {
+    width: 12em;
+  }
+  input[type="number"] {
+    width: 2.5em;
+  }
+
+</style>
+</head>
+
+<body>
+
+<form>
+<div>
+  <label for="in">Input (Hex / Bech32 / Base58 / UTF-8)</label>
+  <input id="in" name="in" type="text" />
+</div>
+<div>
+  <label for="encoding">Encoding for Decode (autoselected for Encode)</label>
+  <select id="encoding" name="encoding">
+    <option value="">-</option>
+    <option value="Hex">Hex</option>
+    <option value="Bech32">Bech32</option>
+    <option value="Base58">Base58</option>
+    <option value="UTF-8">UTF-8</option>
+  </select>
+</div>
+<div>
+  <label for="out">Mnemojis</label>
+  <input id="out" name="out" type="text" />
+</div>
+<div>
+  <input type="number" min="1" id="num-generate" value="16" />
+  <input id="generate" type="submit" value="Generate">
+  <input id="decode" type="submit" value="Decode">
+  <input id="encode" type="submit" value="Encode">
+</div>
+</form>
+
+<a href="/qr-code.html?s=" id="qr-code" style="display: none;">QR-code</a>
+
+<script type="text/javascript" src="js/mnemojis.json.js"></script>
+<script type="text/javascript" src="js/b58.js"></script>
+<script type="text/javascript" src="js/bech32-buffer.min.js"></script>
+<script type="text/javascript" src="js/stringToUtf8UintArray.js"></script>
+<script type="text/javascript" src="js/lodash.toArray.js"></script>
+<script type="text/javascript">
+
+const mapToMnemoji = i => mnemojis[i].chars[0]
+const mapFromMnemoji = mnemoji => mnemojis.findIndex(({ chars }) => chars[0] === mnemoji)
+const mnemojisToBytes = s => Uint8Array.from(toArray(s).map(mnemoji => mapFromMnemoji(mnemoji))).filter(b => b > -1)
+
+const hexAlphabet = "0123456789abcdef"
+const base58Alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+const bech32Alphabet = "023456789acdefghjklmnpqrstuvwxyz"
+const bech32prefixes = ["bc1", "npub1"]
+const isAlphabetString = (alphabet, prefixes) => s => {
+  const str = prefixes ? s.replace(new RegExp(`^(${ prefixes.join("|") })`), "") : s
+  return RegExp(`^[${ alphabet }]+$`).test(str)
+}
+const isHexString = isAlphabetString(hexAlphabet)
+const isBase58String = isAlphabetString(base58Alphabet)
+const isBech32String = isAlphabetString(bech32Alphabet, bech32prefixes)
+
+const getEncoding = s => {
+  if (s === "") return undefined
+  if (isHexString(s.toLowerCase())) return "Hex"
+  if (isBech32String(s)) return "Bech32"
+  if (isBase58String(s)) return "Base58"
+  return "UTF-8"
+}
+
+const padString = s => s.length % 2 === 1 ? `0${ s }` : s
+const fromHexString = s => Uint8Array.from(padString(s).match(/.{2}/g).map(byte => parseInt(byte, 16)))
+const toHexString = bytes => Array.from(bytes).map(b => b.toString(16).padStart(2, "0")).join("")
+const fromBase58String = s => from_b58(s, base58Alphabet)
+const toBase58String = bytes => to_b58(Array.from(bytes), base58Alphabet)
+const fromBech32String = s => bech32.decode(s)
+const toBech32String = (prefix, bytes) => bech32.encode(prefix, bytes)
+const fromUtf8String = s => new Uint8Array(stringToUtf8ByteArray(s))
+const toUtf8String = bytes => Array.from(bytes).map(b => String.fromCodePoint(b)).join("")
+
+const form = document.querySelector("form")
+const inputIn = document.querySelector("input#in")
+const inputOut = document.querySelector("input#out")
+const selectEncoding = document.querySelector("select[name='encoding']")
+const inputNumGenerate = document.querySelector("input#num-generate")
+const qrCodeAnchor = document.querySelector("a#qr-code")
+
+const qrCodeAnchorHrefBase = qrCodeAnchor.getAttribute("href")
+const setQrCodeAnchorHref = s => {
+  qrCodeAnchor.setAttribute("href", qrCodeAnchorHrefBase + s)
+  qrCodeAnchor.setAttribute("style", "display: initial;")
+}
+
+const generate = () => {
+  const n = parseInt(inputNumGenerate.value, 10)
+  if (Number.isNaN(n)) return
+  const values = window.crypto.getRandomValues(new Uint8Array(n))
+  const value = Array.from(values).map(mapToMnemoji).join("")
+  inputOut.value = value
+
+  setQrCodeAnchorHref(value)
+}
+
+const encode = () => {
+  const s = inputIn.value.trim()
+  const encoding = getEncoding(s)
+  let bytes, prefix
+  switch (encoding) {
+    case "Hex":
+      bytes = fromHexString(s.toLowerCase())
+      break
+    case "Bech32":
+      const result = fromBech32String(s)
+      console.log(s, result)
+      bytes = result.data
+      prefix = result.prefix
+      break
+    case "Base58":
+      bytes = fromBase58String(s)
+      break
+    case "UTF-8":
+      bytes = fromUtf8String(s)
+      break
+  }
+
+  if (bytes === undefined) return alert("Non supported encoding")
+
+  const value = Array.from(bytes).map(mapToMnemoji).join("")
+  inputOut.value = `${ prefix ?? "" }${ value }`
+
+  setQrCodeAnchorHref(value)
+}
+
+const decode = () => {
+  const s = inputOut.value.trim()
+  const encoding = selectEncoding.value
+  let strDecoded
+  switch (encoding) {
+    case "Hex":
+    case "":
+      strDecoded = toHexString(mnemojisToBytes(s))
+      break
+    case "Bech32":
+      const prefix = s.substr(0, 2) === "bc" ? "bc" : s.substr(0, 4) === "npub" ? "npub" : ""
+      const sWithoutPrefix = s.replace(new RegExp(`^${ prefix }`), "")
+      strDecoded = toBech32String(prefix, mnemojisToBytes(sWithoutPrefix))
+      break
+    case "Base58":
+      strDecoded = toBase58String(mnemojisToBytes(s))
+      break
+    case "UTF-8":
+      strDecoded = toUtf8String(mnemojisToBytes(s))
+      break
+  }
+  inputIn.value = strDecoded
+}
+
+form.addEventListener("submit", event => {
+  event.preventDefault()
+  switch (event.submitter.id) {
+    case "generate":
+      generate()
+      break
+    case "decode":
+      decode()
+      break
+    case "encode":
+      encode()
+      break
+  }
+})
+
+</script>
+</body>
+</html>

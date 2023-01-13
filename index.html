@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+
+<head>
+
+<meta charset="utf-8">
+<title>Mnemojis</title>
+<style>
+  body {
+    margin: 48px;
+  }
+  #wrapper {
+    width: 1152px;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+  span {
+    display: inline-block;
+    width: 6.25%;
+    padding: 1% 0;
+
+    font-family: Arial, "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+    font-variant-emoji: emoji;
+    font-weight: bold;
+    font-size: 36px;
+    text-align: center;
+
+  }
+</style>
+</head>
+
+<body>
+
+<div id="wrapper"></div>
+
+<script type="text/javascript" src="js/mnemojis.json.js"></script>
+<script type="text/javascript">
+
+const wrapper = document.querySelector("#wrapper")
+
+const n = 16
+const mapToMnemoji = (i, j) => mnemojis[i * n + j].chars[0]
+const Span = t => {
+  const elem = document.createElement("span")
+  elem.appendChild(document.createTextNode(t))
+  return elem
+}
+const Row = () => document.createElement("div")
+
+for (let r = 0; r < n; r++) {
+  const row = Row()
+  for (let c = 0; c < n; c++) {
+    const span = Span(mapToMnemoji(r, c))
+    row.appendChild(span)
+  }
+  wrapper.appendChild(row)
+}
+
+</script>
+</body>
+</html>

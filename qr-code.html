@@ -1,0 +1,185 @@
+<!doctype html>
+<html>
+
+<head>
+
+<meta charset="utf-8">
+<title>Mnemojis QR-code</title>
+<style>
+  body {
+    font-family: Arial, "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+  }
+  #qr-code > span {
+    font-weight: bold;
+    font-size: 36px;
+    text-align: center;
+    float: left;
+    margin: 12px;
+  }
+  .marker {
+    float: left;
+    box-sizing: border-box;
+    background: black;
+    border-radius: 8px;
+    margin: 12px;
+  }
+  .marker.small {
+    float: right;
+  }
+
+  menu {
+    margin-top: 96px;
+    padding: 12px;
+    background: lightgray;
+  }
+
+  menu > div {
+    margin: 12px 0;
+  }
+
+  label {
+    font-weight: bold;
+  }
+
+  input[type="number"], input[type="text"] {
+    font-family: Arial, "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+    font-variant-emoji: emoji;
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+</style>
+
+<body>
+
+<div id="qr-code"></div>
+
+<menu>
+  <div>
+    <label>n</label>
+    <input type="number" min="1" name="n" />
+  </div>
+  <div>
+    <label>mnemojis</label>
+    <input type="text" name="s" />
+  </div>
+  <div>
+    <label>show markers</label>
+    <input type="checkbox" name="show-markers" value="checked"/>
+  </div>
+  <button id="render">Render</button>
+</menu>
+
+<script type="text/javascript" src="js/mnemojis.json.js"></script>
+<script type="text/javascript" src="js/lodash.toArray.js"></script>
+<script type="text/javascript">
+
+// lib
+const randomMnemoji = () => {
+  const values = window.crypto.getRandomValues(new Uint8Array(1))
+  return mnemojis[values[0]].chars[0]
+}
+
+const randomMnemojis = n => {
+  return Array.from(Array(n)).map(randomMnemoji)
+}
+
+// query params
+const urlSearchParams = new URLSearchParams(window.location.search)
+const params = Object.fromEntries(urlSearchParams.entries())
+const defaultN = 10
+const numElementsMarkers = 3 * 3 + 2 * 2
+
+// state
+let showMarkers = true
+const setShowMarkers = b => {
+  showMarkers = b
+}
+
+let mnemojisDisplay
+const setMnemojisDisplay = s => {
+  const l = (defaultN ** 2) - (showMarkers ? numElementsMarkers : 0)
+  mnemojisDisplay = toArray(s ?? randomMnemojis(l))
+}
+setMnemojisDisplay(params.s)
+
+let n
+const calculateN = () => {
+  const nFromLength = l => Math.ceil(Math.sqrt(l + (showMarkers ? numElementsMarkers : 0)))
+  return mnemojisDisplay !== undefined ? nFromLength(mnemojisDisplay.length) : n
+}
+const setN = s => {
+  n = s === undefined ? calculateN() : parseInt(s ?? defaultN, 10)
+}
+setN(params.n)
+
+// config
+const d = 48
+const m = 12
+const dd = d + 2 * m
+
+const Span = t => {
+  const style = `width: ${ d }px; height: ${ d }px;`
+  const elem = document.createElement("span")
+  elem.setAttribute("style", style)
+  elem.appendChild(document.createTextNode(t))
+  return elem
+}
+
+const Row = () => document.createElement("div")
+const Marker = (n, small) => {
+  const elem = document.createElement("div")
+  elem.setAttribute("class", `marker ${ small ? "small" : "" }`)
+  const style = `width: ${ n * dd - 24 }px; height: ${ n * dd - 24 }px; border: 24px solid black; box-shadow: inset 0 0 0 24px white;`
+  elem.setAttribute("style", style)
+  return elem
+}
+
+const qrCode = document.querySelector("#qr-code")
+const render = () => {
+  qrCode.innerHTML = ""
+
+  qrCode.setAttribute("style", `width: ${ n * dd }px; height: ${ n * dd }px;`)
+
+  if (showMarkers) {
+    const leftMarker = Marker(3)
+    qrCode.appendChild(leftMarker)
+  }
+
+  const num = n * n - (showMarkers ? numElementsMarkers : 0)
+  for (let r = 0; r < num; r++) {
+    const span = Span(mnemojisDisplay[r] ?? "0")
+    qrCode.appendChild(span)
+    if (showMarkers) {
+      if (r === n * (n - 2) - 3 * 3 - 1) {
+        const rightMarker = Marker(2, true)
+        qrCode.appendChild(rightMarker)
+      }
+    }
+  }
+}
+
+render()
+
+// menu
+const nInput = document.querySelector("input[name='n']")
+nInput.value = calculateN()
+
+const sInput = document.querySelector("input[name='s']")
+sInput.value = (mnemojisDisplay ?? []).join("")
+
+const showMarkersCheckbox = document.querySelector("input[name='show-markers']")
+showMarkersCheckbox.checked = true
+
+const renderButton = document.querySelector("button[id='render']")
+renderButton.addEventListener("click", () => {
+  setMnemojisDisplay(sInput.value.trim())
+  const nValue = nInput.value.trim()
+  setN(nValue !== "" ? nValue : undefined)
+  setShowMarkers(showMarkersCheckbox.checked)
+  render()
+})
+
+</script>
+</body>
+</html>
