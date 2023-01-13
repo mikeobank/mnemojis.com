@@ -5,9 +5,10 @@
 
 <meta charset="utf-8">
 <title>Mnemojis QR-code</title>
+<link rel="stylesheet" href="css/style.css">
 <style>
-  body {
-    font-family: Arial, "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+  #qr-code  {
+    margin: 0 auto;
   }
   #qr-code > span {
     font-weight: bold;
@@ -16,6 +17,7 @@
     float: left;
     margin: 12px;
   }
+
   .marker {
     float: left;
     box-sizing: border-box;
@@ -23,6 +25,7 @@
     border-radius: 8px;
     margin: 12px;
   }
+
   .marker.small {
     float: right;
   }
@@ -42,8 +45,6 @@
   }
 
   input[type="number"], input[type="text"] {
-    font-family: Arial, "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
-    font-variant-emoji: emoji;
     box-sizing: border-box;
     width: 100%;
   }

@@ -1,0 +1,10 @@
+body {
+  font-family: Arial, "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+  font-variant-emoji: emoji;
+  margin: 48px;
+}
+#wrapper {
+  width: 100%;
+  max-width: 1152px;
+  margin: 0 auto;
+}
