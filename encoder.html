@@ -65,15 +65,12 @@
 <a href="/qr-code.html?s=" id="qr-code" style="display: none;">QR-code</a>
 
 <script type="text/javascript" src="js/mnemojis.json.js"></script>
+<script type="text/javascript" src="js/lib.js"></script>
 <script type="text/javascript" src="js/b58.js"></script>
 <script type="text/javascript" src="js/bech32-buffer.min.js"></script>
 <script type="text/javascript" src="js/stringToUtf8UintArray.js"></script>
 <script type="text/javascript" src="js/lodash.toArray.js"></script>
 <script type="text/javascript">
-
-const mapToMnemoji = i => mnemojis[i].chars[0]
-const mapFromMnemoji = mnemoji => mnemojis.findIndex(({ chars }) => chars[0] === mnemoji)
-const mnemojisToBytes = s => Uint8Array.from(toArray(s).map(mnemoji => mapFromMnemoji(mnemoji))).filter(b => b > -1)
 
 const hexAlphabet = "0123456789abcdef"
 const base58Alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"

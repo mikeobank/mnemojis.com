@@ -73,18 +73,9 @@
 </menu>
 
 <script type="text/javascript" src="js/mnemojis.json.js"></script>
+<script type="text/javascript" src="js/lib.js"></script>
 <script type="text/javascript" src="js/lodash.toArray.js"></script>
 <script type="text/javascript">
-
-// lib
-const randomMnemoji = () => {
-  const values = window.crypto.getRandomValues(new Uint8Array(1))
-  return mnemojis[values[0]].chars[0]
-}
-
-const randomMnemojis = n => {
-  return Array.from(Array(n)).map(randomMnemoji)
-}
 
 // query params
 const urlSearchParams = new URLSearchParams(window.location.search)
