@@ -164,7 +164,8 @@ nInput.addEventListener("change", () => {
 })
 
 sInput.addEventListener("change", () => {
-  setMnemojisDisplay(sInput.value.trim())
+  const s = filterMnemojis(sInput.value.trim())
+  setMnemojisDisplay(s)
   render()
 })
 
