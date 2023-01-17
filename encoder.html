@@ -145,8 +145,8 @@ const generate = () => {
   const values = window.crypto.getRandomValues(new Uint8Array(n))
   const value = Array.from(values).map(mapToMnemoji).join("")
   inputOut.value = value
-
   setQrCodeAnchorHref(value)
+  inputIn.value = ""
 }
 
 const encode = () => {
